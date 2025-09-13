@@ -1,0 +1,101 @@
+# RFC5546 - External Event Decline
+
+# An external Google user invites a local user to an event
+> itip google.user@gmail.com a@example.com
+BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:REQUEST
+BEGIN:VTIMEZONE
+TZID:Europe/Brussels
+X-LIC-LOCATION:Europe/Brussels
+BEGIN:DAYLIGHT
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0200
+TZNAME:GMT+2
+DTSTART:19700329T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+TZNAME:GMT+1
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+DTSTART;TZID=Europe/Brussels:20250913T140000
+DTEND;TZID=Europe/Brussels:20250913T150000
+DTSTAMP:20250913T114750Z
+ORGANIZER;CN=Google User:mailto:google.user@gmail.com
+UID:google-itip-id@google.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Google User;X-NUM-GUESTS=0:mailto:google.user@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=
+ TRUE;CN=a@example.com;X-NUM-GUESTS=0:mailto:a@example.com
+CREATED:20250913T114748Z
+DESCRIPTION:
+LAST-MODIFIED:20250913T114748Z
+LOCATION:
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:ExternalEvent
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
+
+# Send the invite to the local user's calendar
+> send
+
+# The local user declines the event
+> put a@example.com google-itip-id@google.com
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//UserClient v1.0//EN
+BEGIN:VEVENT
+DTSTAMP:20250913T114852Z
+SEQUENCE:0
+UID:google-itip-id@google.com
+ORGANIZER;CN=Google User:mailto:google.user@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;RSVP=TRUE
+ ;CN=Google User;X-NUM-GUESTS=0:mailto:google.user@gmail.com
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=DECLINED;RSVP=TRUE
+ ;CN=a@example.com;X-NUM-GUESTS=0:mailto:a@example.com
+DTSTART;TZID=Europe/Brussels:20250913T140000
+DTEND;TZID=Europe/Brussels:20250913T150000
+SUMMARY:ExternalEvent
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR
+
+# Expect a REPLY to be sent to the organizer
+> expect
+from: a@example.com
+to: google.user@gmail.com
+summary: rsvp DECLINED
+summary.attendee: Participants([ItipParticipant { email: "google.user@gmail.com", name: Some("Google User"), is_organizer: true }, ItipParticipant { email: "a@example.com", name: Some("a@example.com"), is_organizer: false }])
+summary.dtstart: Time(ItipTime { start: 1757764800, tz_id: 435 })
+summary.summary: Text("ExternalEvent")
+BEGIN:VCALENDAR
+METHOD:REPLY
+PRODID:-//Stalwart Labs LLC//Stalwart Server//EN
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:ExternalEvent
+DTEND;TZID=Europe/Brussels:20250913T150000
+DTSTART;TZID=Europe/Brussels:20250913T140000
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=DECLINED;RSVP=TRUE;
+ CN=a@example.com;X-NUM-GUESTS=0:mailto:a@example.com
+ORGANIZER;CN="Google User":mailto:google.user@gmail.com
+UID:google-itip-id@google.com
+DTSTAMP:0
+SEQUENCE:0
+REQUEST-STATUS:2.0;Success
+END:VEVENT
+END:VCALENDAR
+
+# Send iTIP reply to Organizer
+> send
+

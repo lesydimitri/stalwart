@@ -138,6 +138,16 @@ pub(crate) fn itip_export_component(
             _ => {
                 if matches!(export_as, ItipExportAs::Organizer(_))
                     || matches!(entry.name, ICalendarProperty::RecurrenceId)
+                    || (matches!(export_as, ItipExportAs::Attendee(_))
+                        && matches!(
+                            entry.name,
+                            ICalendarProperty::Dtstart
+                                | ICalendarProperty::Dtend
+                                | ICalendarProperty::Summary
+                                | ICalendarProperty::Description
+                                | ICalendarProperty::Duration
+                            | ICalendarProperty::Due
+                        ))
                     || (is_todo
                         && matches!(
                             entry.name,
