@@ -145,7 +145,6 @@ pub(crate) fn itip_export_component(
                                 | ICalendarProperty::Dtend
                                 | ICalendarProperty::Summary
                                 | ICalendarProperty::Description
-                                | ICalendarProperty::Duration
                             | ICalendarProperty::Due
                         ))
                     || (is_todo
